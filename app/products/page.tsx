@@ -17,6 +17,27 @@ export default function AddProduct() {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(''); 
   const [isNewArrival, setIsNewArrival] = useState(false);
+  const [productType, setProductType] = useState('single'); // 'single' or 'collection'
+const [selectedColors, setSelectedColors] = useState([]);
+const [colorQuantities, setColorQuantities] = useState({});
+
+const availableColors = ['red', 'blue', 'green', 'black', 'white']; // Customize as needed
+
+const handleColorToggle = (color) => {
+  setSelectedColors(prev =>
+    prev.includes(color)
+      ? prev.filter(c => c !== color)
+      : [...prev, color]
+  );
+};
+
+const handleColorQtyChange = (color, value) => {
+  setColorQuantities(prev => ({
+    ...prev,
+    [color]: value,
+  }));
+};
+
 
   // Fetch categories
   useEffect(() => {
@@ -40,25 +61,59 @@ export default function AddProduct() {
  
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (img.length === 1 && img[0] === '') {
-      alert('Please choose at least 1 image');
+  if (img.length === 1 && img[0] === '') {
+    alert('Please choose at least 1 image');
+    return;
+  }
+
+// Validate color quantities if collection
+if (productType === 'collection') {
+  if (selectedColors.length === 0) {
+    alert('Please select at least one color with a quantity.');
+    return;
+  }
+
+  let isValid = false;
+
+  for (const color of selectedColors) {
+    const qty = Number(colorQuantities[color]);
+    if (!isNaN(qty) && qty > 0) {
+      isValid = true;
+    } else {
+      alert(`Please enter a valid quantity (greater than 0) for ${color}`);
       return;
     }
+  }
 
-    const payload = {
-      title,
-      description,
-      price,
-      discount,
-      stock,
-      img,
-      category: selectedCategory, 
-      ...(isNewArrival && { arrival: "yes" })
-    };
+  if (!isValid) {
+    alert('At least one color must have a valid quantity greater than 0.');
+    return;
+  }
+}
 
+
+  const payload = {
+    title,
+    description,
+    price,
+    discount,
+    img,
+    category: selectedCategory,
+    type: productType,
+    ...(isNewArrival && { arrival: "yes" }),
+    ...(productType === 'single' && { stock }),
+    ...(productType === 'collection' && {
+      color: selectedColors.map(color => ({
+        color,
+        qty: Number(colorQuantities[color])
+      }))
+    })
+  };
+
+  try {
     const response = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,7 +126,12 @@ export default function AddProduct() {
     } else {
       alert('Failed to add product');
     }
-  };
+  } catch (err) {
+    console.error('Error submitting form:', err);
+    alert('An error occurred');
+  }
+};
+
 
   const handleImgChange = (url) => {
     if (url) {
@@ -128,14 +188,73 @@ export default function AddProduct() {
         className="w-full border p-2 mb-4"
       />
 
+{/* Product Type Radio */}
+<div className="mb-4">
+  <label className="block text-lg font-bold mb-2">Product Type</label>
+  <div className="flex space-x-4">
+    <label className="flex items-center space-x-2">
       <input
-        type="number"
-        placeholder="Stock"
-        value={stock}
-        onChange={(e) => setStock(e.target.value)}
-        className="w-full border p-2 mb-4"
-        required
+        type="radio"
+        value="single"
+        checked={productType === 'single'}
+        onChange={() => setProductType('single')}
       />
+      <span>1 Item</span>
+    </label>
+    <label className="flex items-center space-x-2">
+      <input
+        type="radio"
+        value="collection"
+        checked={productType === 'collection'}
+        onChange={() => setProductType('collection')}
+      />
+      <span>Collection</span>
+    </label>
+  </div>
+</div>
+
+{/* Stock Input (only for 1 item) */}
+{productType === 'single' && (
+  <input
+    type="number"
+    placeholder="Stock"
+    value={stock}
+    onChange={(e) => setStock(e.target.value)}
+    className="w-full border p-2 mb-4"
+    required
+  />
+)}
+
+{/* Color Select with Qty Inputs (only for collection) */}
+{productType === 'collection' && (
+  <div className="mb-4">
+    <label className="block text-lg font-bold mb-2">Choose Colors</label>
+    <div className="flex flex-wrap gap-4">
+      {availableColors.map((color) => (
+        <div key={color} className="flex items-center space-x-2">
+          <div
+            className={`w-6 h-6 rounded-full cursor-pointer border-2 ${
+              selectedColors.includes(color) ? 'ring-2 ring-offset-2' : ''
+            }`}
+            style={{ backgroundColor: color }}
+            onClick={() => handleColorToggle(color)}
+          ></div>
+          {selectedColors.includes(color) && (
+            <input
+              type="number"
+              placeholder="Qty"
+              min={1}
+              value={colorQuantities[color] || ''}
+              onChange={(e) => handleColorQtyChange(color, e.target.value)}
+              className="border px-2 py-1 w-20"
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 
       <label className="block text-lg font-bold mb-2">Description</label>
       <ReactQuill

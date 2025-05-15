@@ -13,7 +13,9 @@ discount,
 img,
 category, 
 stock,
-arrival 
+arrival ,
+color ,
+type ,
       } = body;
 
 console.log("body are: ",body);
@@ -29,7 +31,9 @@ console.log("body are: ",body);
         img,
         category, 
         stock,
-        arrival 
+        arrival ,
+        color ,
+        type ,
           
       },
     });
@@ -65,5 +69,37 @@ export async function GET(req) {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+export async function DELETE(request, { params }) { 
+
+  try {
+  
+    await prisma.product.deleteMany({ 
+    });
+
+    return new Response(
+      JSON.stringify({ message: 'Product deleted successfully' }),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    return new Response(
+      JSON.stringify({ error: 'Failed to delete product' }),
+      { status: 500 }
+    );
   }
 }

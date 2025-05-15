@@ -15,7 +15,9 @@ model Product {
   discount    String
   img         String[]
   category    String
-  stock       String
+  stock       String?
+  color       Json?
+  type       String
   arrival     String   @default("no")
 }
 
