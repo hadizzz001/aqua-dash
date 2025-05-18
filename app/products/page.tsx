@@ -21,7 +21,7 @@ export default function AddProduct() {
 const [selectedColors, setSelectedColors] = useState([]);
 const [colorQuantities, setColorQuantities] = useState({});
 
-const availableColors = ['red', 'blue', 'green', 'black', 'white']; // Customize as needed
+  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray"];
 
 const handleColorToggle = (color) => {
   setSelectedColors(prev =>
@@ -243,7 +243,7 @@ if (productType === 'collection') {
             <input
               type="number"
               placeholder="Qty"
-              min={1}
+              min={0}
               value={colorQuantities[color] || ''}
               onChange={(e) => handleColorQtyChange(color, e.target.value)}
               className="border px-2 py-1 w-20"
@@ -267,7 +267,7 @@ if (productType === 'collection') {
 
       <Upload onFilesUpload={handleImgChange} />
 
-      {/* New Arrival Checkbox */}
+      
       <div className="flex items-center my-4">
         <input
           type="checkbox"
