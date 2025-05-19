@@ -90,25 +90,7 @@ const page = () => {
   };
 
 
-
-
-  const calculateFinalTotal = (idd) => {
-    if (!allTemp || !allTemp?.userInfo || allTemp?.userInfo.length === 0) {
-      return { totalItems: 0 };
-    }
-
-    const filteredOrders = allTemp?.userInfo?.filter(order => order.id === idd);
-
-    return {
-      totalItems: filteredOrders.reduce((acc, post) => acc + (isNaN(post.quantity) ? 0 : post.quantity), 0),
-    };
-  };
-
-
-
-
-
-
+ 
 
   const handlePaymentUpdate = async (id) => {
     try {

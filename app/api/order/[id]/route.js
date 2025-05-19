@@ -3,10 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function GET(request, { params }) {
-  const { id } = params;  
- 
+  const { id } = params;
+
   try {
-   
+
     const categories1 = await prisma.order.findUnique({
       where: { id },
     });
@@ -45,7 +45,7 @@ export async function PATCH(request, { params }) {
 
 
 
- 
+
 
 export async function DELETE(request, { params }) {
   const { id } = params;
@@ -53,7 +53,7 @@ export async function DELETE(request, { params }) {
   try {
     // 1️⃣ Find the order
     const order = await prisma.order.findUnique({
-      where: { id },
+      where: id,
       select: { userInfo: true },
     });
 
@@ -68,12 +68,22 @@ export async function DELETE(request, { params }) {
       for (const item of order.userInfo) {
         const encodedTitle = encodeURIComponent(item.title); // ✅ Fix spaces issue
 
-        await fetch(`https://senses1.netlify.app/api/products1/${encodedTitle}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quantity: item.quantity }),
-        });
+        if (item.type === "single") {
+          await fetch(`https://aqua-dash.netlify.app/api/products1/${encodedTitle}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: item.quantity }),
+          });
+        }
+        else {
+          await fetch(`https://aqua-dash.netlify.app/api/products2/${item.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: item.quantity, color: item.selectedColor }),
+          });
+        }
       }
+
     }
 
     // 3️⃣ Delete order

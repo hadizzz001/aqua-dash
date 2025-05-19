@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function PATCH(request, { params }) {
-  const { name } = params; // Get product name from URL
+  const { id } = params; // Get product name from URL
   let { quantity } = await request.json(); // Get quantity from request body
 
   try {
@@ -18,7 +18,7 @@ export async function PATCH(request, { params }) {
 
     // 2️⃣ Ensure product exists
     const product = await prisma.product.findFirst({
-      where: { title: name }, // ✅ Find by title
+      where: { id }, // ✅ Find by title
     });
 
     if (!product) {
