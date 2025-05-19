@@ -75,12 +75,30 @@ export async function DELETE(request, { params }) {
             body: JSON.stringify({ quantity: item.quantity }),
           });
         }
-        else {
-          await fetch(`https://aqua-dash.netlify.app/api/products2/${item._id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quantity: item.quantity, color: item.selectedColor }),
-          });
+        else { 
+          
+try {
+  const response = await fetch(`https://aqua-dash.netlify.app/api/products2/${item._id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quantity: item.quantity, selectedColor: item.selectedColor }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("PATCH failed:", error);
+    return { error: true, message: error.message };
+  }
+
+  const result = await response.json();
+  console.log("PATCH successful:", result);
+  return result;
+} catch (err) {
+  console.error("Fetch error:", err);
+  return { error: true, message: "Network or server error" };
+}
+
+
         }
       }
 

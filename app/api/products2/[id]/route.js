@@ -50,6 +50,26 @@ export async function PATCH(request, { params }) {
     let colorArray = product.color;
     console.log("Original color array:", colorArray);
 
+ 
+
+// ✅ Check if the selected color exists in the array
+const matchFound = colorArray.some((c) => c.color === selectedColor);
+if (!matchFound) {
+  console.warn("No matching color found:", selectedColor);
+  return new Response(JSON.stringify({ message: "Color not found" }), {
+    status: 404,
+  });
+}
+
+// Update the quantity of the selected color
+const updatedColors = colorArray.map((c) =>
+  c.color === selectedColor ? { ...c, qty: quantity } : c
+);
+
+
+
+
+
     if (!Array.isArray(colorArray)) {
       console.error("Invalid color data format. Expected array:", colorArray);
       return new Response(JSON.stringify({ message: "Invalid color data format" }), {
@@ -57,11 +77,7 @@ export async function PATCH(request, { params }) {
       });
     }
 
-    // Update the quantity of the selected color
-    const updatedColors = colorArray.map((c) =>
-      c.color === selectedColor ? { ...c, qty: quantity } : c
-    );
-
+ 
     console.log("Updated color array:", updatedColors);
 
     // Save updated color array
