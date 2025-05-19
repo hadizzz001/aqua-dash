@@ -63,7 +63,7 @@ if (!matchFound) {
 
 // Update the quantity of the selected color
 const updatedColors = colorArray.map((c) =>
-  c.color === selectedColor ? { ...c, qty: quantity } : c
+  c.color === selectedColor ? { ...c, qty: c.qty + quantity } : c
 );
 
 
