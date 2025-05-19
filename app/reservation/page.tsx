@@ -126,7 +126,7 @@ const page = () => {
       if (response.ok) {
         console.log("Order deleted and stock restored");
         // Refresh orders after deletion
-        window.location.replace("/reservation");;
+        // window.location.replace("/reservation");;
       } else {
         console.error("Failed to delete order");
       }

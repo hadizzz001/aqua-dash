@@ -53,7 +53,7 @@ export async function DELETE(request, { params }) {
   try {
     // 1️⃣ Find the order
     const order = await prisma.order.findUnique({
-      where: id,
+      where: {id},
       select: { userInfo: true },
     });
 
@@ -65,18 +65,18 @@ export async function DELETE(request, { params }) {
 
     // 2️⃣ Restore stock
     if (Array.isArray(order.userInfo)) {
-      for (const item of order.userInfo) {
-        const encodedTitle = encodeURIComponent(item.title); // ✅ Fix spaces issue
-
+      for (const item of order.userInfo) { 
+ 
+        
         if (item.type === "single") {
-          await fetch(`https://aqua-dash.netlify.app/api/products1/${encodedTitle}`, {
+          await fetch(`https://aqua-dash.netlify.app/api/products1/${item._id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ quantity: item.quantity }),
           });
         }
         else {
-          await fetch(`https://aqua-dash.netlify.app/api/products2/${item.id}`, {
+          await fetch(`https://aqua-dash.netlify.app/api/products2/${item._id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ quantity: item.quantity, color: item.selectedColor }),
