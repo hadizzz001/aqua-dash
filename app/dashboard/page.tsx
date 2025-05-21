@@ -262,7 +262,7 @@ function EditProductForm({ product, onCancel, onSave }) {
   const [arrival, setArrival] = useState(product.arrival === "yes");
   const [type, setType] = useState(product.type || "single");
 
-  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray"];
+  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray", "pink"];
 
   const [selectedColors, setSelectedColors] = useState(() => {
     const initial = {};

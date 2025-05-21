@@ -21,7 +21,7 @@ export default function AddProduct() {
 const [selectedColors, setSelectedColors] = useState([]);
 const [colorQuantities, setColorQuantities] = useState({});
 
-  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray"];
+  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray" , "pink"];
 
 const handleColorToggle = (color) => {
   setSelectedColors(prev =>
