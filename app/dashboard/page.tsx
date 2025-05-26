@@ -436,7 +436,7 @@ function EditProductForm({ product, onCancel, onSave }) {
           <input type="number" value={weightKg} step="0.01" onChange={(e) => setWeightKg(e.target.value)} className="w-full border p-2" />
         </div>
         <div>
-          <label className="block text-sm font-medium">Profit</label>
+          <label className="block text-sm font-medium">Profit (eg: 0.6 for 60%)</label>
           <input type="number" value={profitPercent} step="0.1" onChange={(e) => setProfitPercent(e.target.value)} className="w-full border p-2" />
         </div>
         <div>
