@@ -6,51 +6,63 @@ const Upload = ({ onFilesUpload }) => {
   const [media, setMedia] = useState([]); // Array of uploaded file URLs
   const [loading, setLoading] = useState(false);
 
-  const handleFilesChange = async (event) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+const handleFilesChange = async (event) => {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
 
-    setLoading(true);
-    const uploadedMedia = [];
+  const totalSelected = files.length;
+  const totalAlreadyUploaded = media.length;
+  const maxAllowed = 12;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "ml_default");
+  if (totalAlreadyUploaded >= maxAllowed) {
+    alert("You can only upload a maximum of 12 files.");
+    return;
+  }
 
-      // Determine the upload endpoint based on file type
-      const isVideo = file.type.startsWith("video/");
-      const uploadUrl = isVideo
-        ? "https://api.cloudinary.com/v1_1/dj61ewxvc/video/upload"
-        : "https://api.cloudinary.com/v1_1/dj61ewxvc/image/upload";
+  const remainingSlots = maxAllowed - totalAlreadyUploaded;
+  const filesToUpload = Array.from(files).slice(0, remainingSlots);
 
-      try {
-        const res = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData,
-        });
+  setLoading(true);
+  const uploadedMedia = [];
 
-        if (!res.ok) {
-          console.error(`Upload failed for ${file.name}`);
-          continue;
-        }
+  for (let i = 0; i < filesToUpload.length; i++) {
+    const file = filesToUpload[i];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "ml_default");
 
-        const data = await res.json();
-        uploadedMedia.push(data.secure_url);
-      } catch (error) {
-        console.error("Error uploading file:", error);
+    const isVideo = file.type.startsWith("video/");
+    const uploadUrl = isVideo
+      ? "https://api.cloudinary.com/v1_1/dj61ewxvc/video/upload"
+      : "https://api.cloudinary.com/v1_1/dj61ewxvc/image/upload";
+
+    try {
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        console.error(`Upload failed for ${file.name}`);
+        continue;
       }
-    }
 
-    setMedia((prevMedia) => [...prevMedia, ...uploadedMedia]);
-    if (onFilesUpload) onFilesUpload(uploadedMedia);
-    setLoading(false);
-  };
+      const data = await res.json();
+      uploadedMedia.push(data.secure_url);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  }
+
+  setMedia((prevMedia) => [...prevMedia, ...uploadedMedia]);
+  if (onFilesUpload) onFilesUpload(uploadedMedia);
+  setLoading(false);
+};
+
 
   return (
     <div className="mb-4">
-      <label className="block mb-1 font-bold">Upload Images or Videos</label>
+      <label className="block mb-1 font-bold">Upload Images</label>
       <input type="file" multiple accept="image/*,video/*" onChange={handleFilesChange} className="border p-2 w-full" />
       {loading && <p>Uploading...</p>}
       <div className="mt-2 flex flex-wrap gap-2">

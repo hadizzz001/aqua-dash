@@ -605,7 +605,7 @@ export default function AddProduct() {
         placeholder="Write your product description here..."
       />
 
-      <Upload onFilesUpload={handleImgChange} />
+      <Upload onFilesUpload={handleImgChange} />Max 12 images
 
 
       <div className="flex items-center my-4">
