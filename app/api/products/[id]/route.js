@@ -16,6 +16,14 @@ export async function PATCH(request, { params }) {
     arrival ,
     color ,
     type ,
+      origin       ,
+  weight       ,
+  profit       ,
+  rate         ,
+  shippingCost ,
+  landing      ,
+  profitAmount ,
+  date        ,
      
   } = await request.json();
 
@@ -37,6 +45,14 @@ export async function PATCH(request, { params }) {
         arrival ,
         color ,
         type ,
+          origin       ,
+  weight       ,
+  profit       ,
+  rate         ,
+  shippingCost ,
+  landing      ,
+  profitAmount ,
+  date        ,
          
       },
     });

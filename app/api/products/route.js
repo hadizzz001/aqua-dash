@@ -5,20 +5,28 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const body = await req.json();
-    const {   
+    const {
       title,
-description,
-price,
-discount,
-img,
-category, 
-stock,
-arrival ,
-color ,
-type ,
-      } = body;
+      description,
+      price,
+      discount,
+      img,
+      category,
+      stock,
+      arrival,
+      color,
+      type,
+      origin,
+      weight,
+      profit,
+      rate,
+      shippingCost,
+      landing,
+      profitAmount,
+      date,
+    } = body;
 
-console.log("body are: ",body);
+    console.log("body are: ", body);
 
 
 
@@ -29,16 +37,24 @@ console.log("body are: ",body);
         price,
         discount,
         img,
-        category, 
+        category,
         stock,
-        arrival ,
-        color ,
-        type ,
-          
+        arrival,
+        color,
+        type,
+        origin,
+        weight,
+        profit,
+        rate,
+        shippingCost,
+        landing,
+        profitAmount,
+        date,
+
       },
     });
 
-    
+
 
     return new Response(JSON.stringify({ message: 'Product created successfully', product }), {
       status: 201,
@@ -56,7 +72,7 @@ console.log("body are: ",body);
 export async function GET(req) {
   try {
     const products = await prisma.product.findMany({
-      
+
     });
 
     return new Response(JSON.stringify(products), {
@@ -84,11 +100,11 @@ export async function GET(req) {
 
 
 
-export async function DELETE(request, { params }) { 
+export async function DELETE(request, { params }) {
 
   try {
-  
-    await prisma.product.deleteMany({ 
+
+    await prisma.product.deleteMany({
     });
 
     return new Response(
