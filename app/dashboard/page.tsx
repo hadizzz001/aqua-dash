@@ -262,8 +262,8 @@ function EditProductForm({ product, onCancel, onSave }) {
 
   const shippingCost = parseFloat((weight * rate).toFixed(2));
   const rawPrice = parseFloat(((origin + shippingCost) / (1 - profit || 1)).toFixed(2));
-  const roundedUpPrice = parseFloat((Math.ceil(rawPrice * 100) / 100).toFixed(2));
-  const finalPrice = parseFloat((roundedUpPrice - 0.01).toFixed(2));
+  const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
+  const finalPrice = parseFloat((roundedUpPrice).toFixed(2));
   const profitAmount = parseFloat((roundedUpPrice - (origin + shippingCost)).toFixed(2));
   const oldprice = parseFloat((finalPrice * 1.25).toFixed(2));
   const landing = parseFloat((shippingCost + origin).toFixed(2));
@@ -516,106 +516,105 @@ function EditProductForm({ product, onCancel, onSave }) {
       </div>
 
 
-{type === "collection" && (
-  <div className="mb-6">
-    <label className="block text-lg font-bold mb-2">Choose Colors</label>
-    <div className="flex flex-col gap-4">
-      {availableColors.map((color) => {
-        const isSelected = selectedColors[color];
-        const hasSizes = isSelected && Object.keys(isSelected.sizes || {}).length > 0;
+      {type === "collection" && (
+        <div className="mb-6">
+          <label className="block text-lg font-bold mb-2">Choose Colors</label>
+          <div className="flex flex-col gap-4">
+            {availableColors.map((color) => {
+              const isSelected = selectedColors[color];
+              const hasSizes = isSelected && Object.keys(isSelected.sizes || {}).length > 0;
 
-        return (
-          <div key={color} className="p-3 border rounded-md">
-            <div className="flex items-center space-x-2 mb-2">
-              <div
-                className={`w-6 h-6 rounded-full cursor-pointer border-2 ${
-                  isSelected ? 'ring-2 ring-offset-2 ring-black' : ''
-                }`}
-                style={{ backgroundColor: color }}
-                onClick={() => toggleColor(color)}
-                title={color}
-              ></div>
-              <span className="capitalize font-medium">{color}</span>
-            </div>
+              return (
+                <div key={color} className="p-3 border rounded-md">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div
+                      className={`w-6 h-6 rounded-full cursor-pointer border-2 ${isSelected ? 'ring-2 ring-offset-2 ring-black' : ''
+                        }`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => toggleColor(color)}
+                      title={color}
+                    ></div>
+                    <span className="capitalize font-medium">{color}</span>
+                  </div>
 
-            {isSelected && (
-              <div className="ml-6 space-y-2">
-                {/* Show quantity input if no sizes */}
-                {!hasSizes && (
-                  <input
-                    type="number"
-                    min={1}
-                    placeholder="Qty"
-                    className="border px-2 py-1 w-20"
-                    value={isSelected.qty}
-                    onChange={(e) => updateQty(color, e.target.value)}
-                  />
-                )}
+                  {isSelected && (
+                    <div className="ml-6 space-y-2">
+                      {/* Show quantity input if no sizes */}
+                      {!hasSizes && (
+                        <input
+                          type="number"
+                          min={1}
+                          placeholder="Qty"
+                          className="border px-2 py-1 w-20"
+                          value={isSelected.qty}
+                          onChange={(e) => updateQty(color, e.target.value)}
+                        />
+                      )}
 
-                {/* Add Size Button */}
-                <button
-                  type="button"
-                  className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
-                  onClick={() => {
-                    const size = prompt('Enter size name (e.g., S, M, L)');
-                    if (!size) return;
-                    updateSize(color, size, { size, qty: 1, price: '' });
-                  }}
-                >
-                  + Add Size
-                </button>
-
-                {/* Render Sizes */}
-                {hasSizes &&
-                  Object.entries(isSelected.sizes).map(([sizeName, sizeData]) => (
-                    <div key={sizeName} className="flex items-center gap-2 ml-4 mt-2">
-                      <span className="font-semibold">{sizeData.size}</span>
-
-                      <span>Price</span>
-                      <input
-                        type="number"
-                        placeholder="Price"
-                        value={sizeData.price}
-                        onChange={(e) =>
-                          updateSize(color, sizeName, {
-                            ...sizeData,
-                            price: e.target.value,
-                          })
-                        }
-                        className="border px-2 py-1 w-20"
-                      />
-
-                      <span>Qty</span>
-                      <input
-                        type="number"
-                        placeholder="Qty"
-                        value={sizeData.qty}
-                        onChange={(e) =>
-                          updateSize(color, sizeName, {
-                            ...sizeData,
-                            qty: e.target.value,
-                          })
-                        }
-                        className="border px-2 py-1 w-20"
-                      />
-
+                      {/* Add Size Button */}
                       <button
                         type="button"
-                        className="text-red-500 font-bold"
-                        onClick={() => updateSize(color, sizeName, null, true)} // delete
+                        className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
+                        onClick={() => {
+                          const size = prompt('Enter size name (e.g., S, M, L)');
+                          if (!size) return;
+                          updateSize(color, size, { size, qty: 1, price: '' });
+                        }}
                       >
-                        ✕
+                        + Add Size
                       </button>
+
+                      {/* Render Sizes */}
+                      {hasSizes &&
+                        Object.entries(isSelected.sizes).map(([sizeName, sizeData]) => (
+                          <div key={sizeName} className="flex items-center gap-2 ml-4 mt-2">
+                            <span className="font-semibold">{sizeData.size}</span>
+
+                            <span>Price</span>
+                            <input
+                              type="number"
+                              placeholder="Price"
+                              value={sizeData.price}
+                              onChange={(e) =>
+                                updateSize(color, sizeName, {
+                                  ...sizeData,
+                                  price: e.target.value,
+                                })
+                              }
+                              className="border px-2 py-1 w-20"
+                            />
+
+                            <span>Qty</span>
+                            <input
+                              type="number"
+                              placeholder="Qty"
+                              value={sizeData.qty}
+                              onChange={(e) =>
+                                updateSize(color, sizeName, {
+                                  ...sizeData,
+                                  qty: e.target.value,
+                                })
+                              }
+                              className="border px-2 py-1 w-20"
+                            />
+
+                            <button
+                              type="button"
+                              className="text-red-500 font-bold"
+                              onClick={() => updateSize(color, sizeName, null, true)} // delete
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
                     </div>
-                  ))}
-              </div>
-            )}
+                  )}
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+        </div>
+      )}
 
 
 
