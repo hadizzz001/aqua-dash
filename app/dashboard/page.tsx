@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Upload from '../components/Upload';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
+import ExportToExcel from '../components/ExportToExcel';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -140,6 +141,8 @@ export default function ProductTable() {
           ))}
         </select>
       </div>
+
+       <ExportToExcel products={products} />
 
       <table className="table-auto w-full border-collapse border border-gray-200 mb-4">
         <thead>
@@ -324,7 +327,7 @@ function EditProductForm({ product, onCancel, onSave }) {
       category: selectedCategory,
       type,
       ...(arrival && { arrival: "yes" }),
-      ...(type === 'single' && { stock: Number(stock) }),
+      ...(type === 'single' && { stock: stock }),
       ...(type === 'collection' && {
         color: Object.entries(selectedColors).map(([colorName, data]) => {
           const { qty, sizes } = data;

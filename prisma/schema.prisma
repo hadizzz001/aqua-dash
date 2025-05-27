@@ -23,7 +23,7 @@ model Product {
   shippingCost Float?
   landing      Float?
   profitAmount Float?
-  date        String?
+  date         String?
   color        Json?
   type         String
   arrival      String   @default("no")
@@ -42,16 +42,18 @@ model Offer {
 }
 
 model Order {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  userInfo  Json
-  cartItems Json
-  total     String
-  delivery  String
-  code      String?
-  paid      Boolean @default(false)
-  num       String?
-  remark    String?
-  date      String
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  oid         Int     @unique
+  userInfo    Json
+  cartItems   Json
+  total       String
+  delivery    String
+  code        String?
+  paid        Boolean @default(false)
+  num         String?
+  remark      String?
+  fulfillment Boolean @default(false)
+  date        String
 }
 
 model Review {
