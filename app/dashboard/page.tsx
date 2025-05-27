@@ -142,14 +142,13 @@ export default function ProductTable() {
         </select>
       </div>
 
-       <ExportToExcel products={products} />
+      <ExportToExcel products={products} />
 
       <table className="table-auto w-full border-collapse border border-gray-200 mb-4">
         <thead>
           <tr className="bg-gray-100">
             <th className="border p-2">Title</th>
             <th className="border p-2">Pic</th>
-            <th className="border p-2">Price (USD)</th>
             <th className="border p-2">Discount Price (USD)</th>
             <th className="border p-2">Category</th>
             <th className="border p-2">New Arrival</th>
@@ -167,15 +166,52 @@ export default function ProductTable() {
             const isCollection = product.type === "collection";
             const isSingle = product.type === "single";
 
-            const allColorsZero =
-              isCollection &&
-              (!product.color || product.color.every((c) => parseInt(c.qty) === 0));
+            // Stock Calculation Logic
+            const isOutOfStockSingle = isSingle && (product.stock === "0" || product.stock === 0 || product.stock === null );
+
+            const allColorsQtyZero = isCollection &&
+              product.color &&
+              product.color.length > 0 &&
+              product.color.every(c => !c.sizes && parseInt(c.qty) === 0);
+
+            const allSizesQtyZero = isCollection &&
+              product.color &&
+              product.color.length > 0 &&
+              product.color.every(c =>
+                Array.isArray(c.sizes) &&
+                c.sizes.length > 0 &&
+                c.sizes.every(s => parseInt(s.qty || 0) === 0)
+              );
+
+            let totalStock = 0;
+            if (isSingle) {
+              totalStock = parseInt(product.stock || 0);
+            } else if (product.color && product.color.length > 0) {
+              product.color.forEach(c => {
+                if (Array.isArray(c.sizes) && c.sizes.length > 0) {
+                  totalStock += c.sizes.reduce((sum, s) => sum + parseInt(s.qty || 0), 0);
+                } else {
+                  totalStock += parseInt(c.qty || 0);
+                }
+              });
+            }
+
+            const isLowStock = totalStock > 0 && totalStock < 3;
+
+            let rowClass = "";
+            if (isOutOfStockSingle || allColorsQtyZero || allSizesQtyZero) {
+              rowClass = "bg-red-300";
+            } else if (isLowStock) {
+              rowClass = "bg-yellow-300";
+            }
+
+
+
+
 
             return (
-              <tr
-                key={product.id}
-                className={(allColorsZero && isCollection) || (product.stock === "0" && !isCollection) || (product.stock === null && !isCollection) ? 'bg-red-300' : ''}
-              >
+              <tr key={product.id} className={rowClass}>
+
                 <td className="border p-2">{product.title}</td>
                 <td className="border p-2">
                   {isVideo ? (
@@ -187,24 +223,69 @@ export default function ProductTable() {
                     <img src={fileUrl} alt="Product" className="w-24 h-auto" />
                   )}
                 </td>
-                <td className="border p-2">{product.price}</td>
-                <td className="border p-2">{product.discount || 'N/A'}</td>
+                <td className="border p-2">
+                  {product.type === 'single' || (product.type === 'collection' && !product.color)
+                    ? (`$${product.discount}`)
+                    : (product.type === 'collection' && product.color && product.color.some(c => c.sizes?.length)
+                      ? (() => {
+                        const prices = product.color
+                          .flatMap(c => c.sizes || [])
+                          .map(s => s.price);
+
+                        if (prices.length === 0) return product.discount;
+
+                        const minPrice = Math.min(...prices);
+                        const maxPrice = Math.max(...prices);
+
+                        return minPrice === maxPrice
+                          ? `$${minPrice.toFixed(2)}`
+                          : `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
+                      })()
+                      : `$${product.discount}`
+                    )
+                  }
+                </td>
+
                 <td className="border p-2">{product.category}</td>
                 <td className="border p-2">{product.arrival}</td>
                 <td className="border p-2">{product.type}</td>
 
-                {/* Hide stock if type is collection */}
                 <td className="border p-2">
-                  {!isCollection ? product.stock : '—'}
+                  {product.type === 'single' && product.stock}
+
+                  {product.type === 'collection' && product.color && !product.color[0]?.sizes &&
+                    product.color.reduce((sum, c) => sum + (c.qty || 0), 0)
+                  }
+
+                  {product.type === 'collection' && product.color && product.color[0]?.sizes &&
+                    product.color.reduce(
+                      (colorSum, color) =>
+                        colorSum +
+                        (color.sizes
+                          ? color.sizes.reduce((sizeSum, s) => sizeSum + (s.qty || 0), 0)
+                          : 0),
+                      0
+                    )
+                  }
                 </td>
 
-                {/* Hide colors if type is single */}
                 <td className="border p-2">
                   {!isSingle && product.color && product.color.length > 0 ? (
                     <ul className="space-y-1">
                       {product.color.map((c, index) => (
                         <li key={index}>
-                          <span className="font-semibold">{c.color}</span>: {c.qty}
+                          <span className="font-semibold">{c.color}</span>
+                          {c.sizes && Array.isArray(c.sizes) ? (
+                            <ul className="ml-4 space-y-1 list-disc">
+                              {c.sizes.map((s, idx) => (
+                                <li key={idx}>
+                                  <span className="italic">{s.size}</span>: {s.qty}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <>: {c.qty}</>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -212,6 +293,7 @@ export default function ProductTable() {
                     isCollection ? 'No colors' : '—'
                   )}
                 </td>
+
 
                 <td className="border p-2">
                   <button
