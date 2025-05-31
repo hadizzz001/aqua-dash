@@ -72,7 +72,7 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     const products = await prisma.product.findMany({
-
+      orderBy: { id: 'desc' }
     });
 
     return new Response(JSON.stringify(products), {
@@ -81,12 +81,16 @@ export async function GET(req) {
     });
   } catch (error) {
     console.error('Error fetching products:', error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch products' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch products' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
+
 
 
 

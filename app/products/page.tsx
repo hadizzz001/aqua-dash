@@ -406,6 +406,7 @@ const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
           type="number"
           placeholder="Stock"
           value={stock}
+          min={0}
           onChange={(e) => setStock(e.target.value)}
           className="w-full border p-2 mb-4"
           required
@@ -456,7 +457,10 @@ const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
                         className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
                         onClick={() => {
                           const size = prompt('Enter size name (e.g., S, M, L)');
-                          if (!size) return;
+                            if (!size || size.includes(',')) {
+    alert('Commas are not allowed in the size name.');
+    return;
+  }
 
                           setColorQuantities((prev) => ({
                             ...prev,
@@ -504,6 +508,7 @@ const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
                               type="number"
                               placeholder="Qty"
                               value={sizeData.qty}
+                              min={0}
                               onChange={(e) =>
                                 setColorQuantities((prev) => ({
                                   ...prev,
@@ -572,6 +577,7 @@ const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
                         <input
                           type="number"
                           placeholder="Qty"
+                          min={0}
                           value={sz.qty}
                           onChange={(e) =>
                             handleSizeChange(color, idx, 'qty', e.target.value)

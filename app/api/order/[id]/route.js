@@ -29,17 +29,18 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   const { id } = params;
+  const body = await request.json(); // Parse the JSON body
 
   try {
     const updatedOrder = await prisma.order.update({
       where: { id },
-      data: { paid: true },
+      data: body, // Pass dynamic fields (e.g., { paid: true } or { fulfillment: true })
     });
 
     return new Response(JSON.stringify(updatedOrder), { status: 200 });
   } catch (error) {
-    console.error('Error updating order:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+    console.error("Error updating order:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 }
 
@@ -50,44 +51,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   const { id } = params;
 
-  try {
-    // 1️⃣ Find the order
-    const order = await prisma.order.findUnique({
-      where: { id },
-      select: { userInfo: true },
-    });
-
-    if (!order) {
-      return new Response(JSON.stringify({ message: "Order not found" }), {
-        status: 404,
-      });
-    }
-
-    // 2️⃣ Restore stock
-    if (Array.isArray(order.userInfo)) {
-      for (const item of order.userInfo) {
-
-
-        if (item.type === "single") {
-          await fetch(`https://aqua-dash.netlify.app/api/products1/${item._id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quantity: item.quantity }),
-          });
-        }
-        else {
-          await fetch(`https://aqua-dash.netlify.app/api/products2/${item._id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quantity: item.quantity, selectedColor: item.selectedColor }),
-          });
-
-        }
-      }
-
-    }
-
-    // 3️⃣ Delete order
+  try {  
     await prisma.order.delete({
       where: { id },
     });

@@ -3,6 +3,7 @@
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 
 const ExportToExcel = ({ allTemp }) => {
   const handleExport = () => {
@@ -40,12 +41,12 @@ const ExportToExcel = ({ allTemp }) => {
   };
 
   return (
-    <button
-      onClick={handleExport}
-      className="bg-green-500 text-white px-4 py-2 rounded"
-    >
-      Export to Excel
-    </button>
+<button
+  onClick={handleExport}
+  className="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center"
+>
+  <ArrowDownTrayIcon className="h-5 w-5" />
+</button>
   );
 };
 

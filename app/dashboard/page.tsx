@@ -105,7 +105,7 @@ export default function ProductTable() {
 
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-7xl mx-auto p-4 text-[12px]">
       {editingProduct && (
         <EditProductForm
           product={editingProduct}
@@ -490,7 +490,7 @@ function EditProductForm({ product, onCancel, onSave }) {
 
 
   return (
-    <form onSubmit={handleSubmit} className="border p-4 bg-gray-100 rounded">
+    <form onSubmit={handleSubmit} className="text-[12px] border p-4 bg-gray-100 rounded">
       <h2 className="text-xl font-bold mb-4">Edit Product</h2>
 
       {/* Title */}
@@ -628,7 +628,7 @@ function EditProductForm({ product, onCancel, onSave }) {
                       {!hasSizes && (
                         <input
                           type="number"
-                          min={1}
+                          min={0}
                           placeholder="Qty"
                           className="border px-2 py-1 w-20"
                           value={isSelected.qty}
@@ -640,11 +640,15 @@ function EditProductForm({ product, onCancel, onSave }) {
                       <button
                         type="button"
                         className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
-                        onClick={() => {
-                          const size = prompt('Enter size name (e.g., S, M, L)');
-                          if (!size) return;
-                          updateSize(color, size, { size, qty: 1, price: '' });
-                        }}
+onClick={() => {
+  const size = prompt('Enter size name (e.g., S, M, L)');
+  if (!size || size.includes(',')) {
+    alert('Commas are not allowed in the size name.');
+    return;
+  }
+  updateSize(color, size, { size, qty: 1, price: '' });
+}}
+
                       >
                         + Add Size
                       </button>
