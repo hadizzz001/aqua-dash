@@ -16,32 +16,33 @@ const page = () => {
   const [filterClientName, setFilterClientName] = useState("");
   const [filterReceiptNum, setFilterReceiptNum] = useState("");
   const [fromDate, setFromDate] = useState('');
-const [toDate, setToDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [totals, setTotals] = useState({});
 
 
-const filteredData = allTemp?.filter((post) => {
-  const clientMatch = filterClientName
-    ? post.cartItems?.fname?.toLowerCase().includes(filterClientName.toLowerCase())
-    : true;
+  const filteredData = allTemp?.filter((post) => {
+    const clientMatch = filterClientName
+      ? post.cartItems?.fname?.toLowerCase().includes(filterClientName.toLowerCase())
+      : true;
 
-  const receiptMatch = filterReceiptNum
-    ? post.num?.toLowerCase().includes(filterReceiptNum.toLowerCase())
-    : true;
+    const receiptMatch = filterReceiptNum
+      ? post.num?.toLowerCase().includes(filterReceiptNum.toLowerCase())
+      : true;
 
-  const postDate = new Date(post.date);
-  const from = fromDate ? new Date(fromDate) : null;
-  const to = toDate ? new Date(toDate) : null;
+    const postDate = new Date(post.date);
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate) : null;
 
-  const dateInRange =
-    (!from || postDate >= from) &&
-    (!to || postDate <= to);
+    const dateInRange =
+      (!from || postDate >= from) &&
+      (!to || postDate <= to);
 
-  return clientMatch && receiptMatch && dateInRange;
-});
+    return clientMatch && receiptMatch && dateInRange;
+  });
 
 
 
-console.log("filteredData", filteredData);
+  console.log("filteredData", filteredData);
 
 
 
@@ -233,7 +234,7 @@ console.log("filteredData", filteredData);
 
       }
 
-    } 
+    }
 
     try {
       const response = await fetch(`/api/order/${id}`, {
@@ -255,6 +256,67 @@ console.log("filteredData", filteredData);
 
 
 
+
+
+
+
+
+const calculateOrderTotal = async (order) => {
+  let orderTotal = 0;
+
+  for (const item of order.userInfo) {
+    let price = 0;
+
+    if (item.type === "single" || (item.type === "collection" && !item.selectedSize)) {
+      // Single type or collection without size (flat price)
+      price = parseFloat(item.discount);
+    } else if (item.type === "collection" && item.selectedColor && item.selectedSize) {
+      // Collection with size: find price based on selectedColor and selectedSize
+      const selectedColor = item.color?.find(c => c.color === item.selectedColor);
+      const selectedSize = selectedColor?.sizes?.find(s => s.size === item.selectedSize);
+      price = parseFloat(selectedSize?.price || "0");
+    }
+
+    const qty = parseInt(item.quantity || 1, 10);
+    orderTotal += price * qty;
+  }
+
+  const delivery = parseFloat(order.delivery || "0");
+  orderTotal += delivery;
+
+  let discountPercent = 0;
+
+  if (order.code) {
+    try {
+      const res = await fetch(`/api/offer/${order.code}`);
+      const data = await res.json();
+      discountPercent = data?.per || 0;
+    } catch (err) {
+      console.error("Discount API failed", err);
+    }
+  }
+
+  const discountAmount = (orderTotal * discountPercent) / 100;
+  return (orderTotal - discountAmount).toFixed(2);
+};
+
+
+
+  useEffect(() => {
+    const fetchTotals = async () => {
+      if (!Array.isArray(allTemp)) return;
+      const result = {};
+      for (const order of allTemp) {
+        const total = await calculateOrderTotal(order);
+        result[order.oid] = total;
+      }
+      setTotals(result);
+    };
+
+    fetchTotals();
+  }, [allTemp]);
+
+
   return (
     <div className="container text-[12px]">
       <div className="flex justify-end items-center space-x-2 mb-4">
@@ -273,17 +335,17 @@ console.log("filteredData", filteredData);
           className="border p-1 text-xs"
         />
         <input
-  type="date"
-  value={fromDate}
-  onChange={(e) => setFromDate(e.target.value)}
-  className="border p-1 text-xs"
-/>
-<input
-  type="date"
-  value={toDate}
-  onChange={(e) => setToDate(e.target.value)}
-  className="border p-1 text-xs"
-/>
+          type="date"
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+          className="border p-1 text-xs"
+        />
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+          className="border p-1 text-xs"
+        />
 
         <div className="text-xs">
           <ExportButton allTemp={allTemp} />
@@ -334,7 +396,7 @@ console.log("filteredData", filteredData);
                   <img src={post.userInfo[0].img[0]} width={40} height={40} />
                 </td>
                 <td>{post.cartItems.fname}</td>
-                <td>${post.total}</td>
+                <td>{totals[post.oid] ? `$${totals[post.oid]}` : "..."}</td>
                 <td>
                   {post.userInfo?.reduce(
                     (acc, item) =>
@@ -344,34 +406,34 @@ console.log("filteredData", filteredData);
                 </td>
                 <td>{post.code}</td>
                 <td>{post.date}</td>
-<td className="flex space-x-2">
-  <a
-    className="text-blue-700 bg-black p-1 w-14 h-8 flex items-center justify-center "
-    href={`/order?id=${post.id}`}
-  >
-    View
-  </a>
-  <button
-    onClick={() => handleDeleteOrder(post.id)}
-    className="bg-red-500 text-white p-1 w-14 h-8 "
-  >
-    Delete
-  </button>
-  <button
-    className={`p-1 w-14 h-8 ${post.paid ? "bg-blue-500 text-white" : "bg-black text-white"}`}
-    onClick={() => !post.paid && handlePaymentUpdate(post.id)}
-    disabled={post.paid}
-  >
-    {post.paid ? "Paid" : "Unpaid"}
-  </button>
-  <button
-    className={`p-1 w-20 h-8 ${post.fulfillment ? "bg-blue-500 text-white" : "bg-black text-white"}`}
-    onClick={() => !post.fulfillment && handlePaymentUpdate1(post.id)}
-    disabled={post.fulfillment}
-  >
-    {post.fulfillment ? "Fulfilled" : "Unfulfilled"}
-  </button>
-</td>
+                <td className="flex space-x-2">
+                  <a
+                    className="text-blue-700 bg-black p-1 w-14 h-8 flex items-center justify-center "
+                    href={`/order?id=${post.id}`}
+                  >
+                    View
+                  </a>
+                  <button
+                    onClick={() => handleDeleteOrder(post.id)}
+                    className="bg-red-500 text-white p-1 w-14 h-8 "
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className={`p-1 w-14 h-8 ${post.paid ? "bg-blue-500 text-white" : "bg-black text-white"}`}
+                    onClick={() => !post.paid && handlePaymentUpdate(post.id)}
+                    disabled={post.paid}
+                  >
+                    {post.paid ? "Paid" : "Unpaid"}
+                  </button>
+                  <button
+                    className={`p-1 w-20 h-8 ${post.fulfillment ? "bg-blue-500 text-white" : "bg-black text-white"}`}
+                    onClick={() => !post.fulfillment && handlePaymentUpdate1(post.id)}
+                    disabled={post.fulfillment}
+                  >
+                    {post.fulfillment ? "Fulfilled" : "Unfulfilled"}
+                  </button>
+                </td>
 
               </tr>
             ))

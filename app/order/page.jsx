@@ -19,6 +19,7 @@ const page = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [qty, setQty] = useState(1);
+    const [totalAmount, setTotalAmount] = useState(null)
   const [editableData, setEditableData] = useState({
     fname: allTemp1?.cartItems?.fname || '',
     lname: allTemp1?.cartItems?.lname || '',
@@ -164,7 +165,7 @@ const page = () => {
     }
 
     setShowModal(false);
-    fetchProducts(); // refresh order
+    window.location.replace(`/order?id=${search}`);
   };
 
 
@@ -321,6 +322,75 @@ const page = () => {
   const handleRemarkChange = (event) => { 
   setRemark(event.target.value);
 };
+
+
+
+
+
+
+
+const calculateOrderTotal = async (orders) => {
+  let grandTotal = 0;
+
+  for (const order of orders) {
+    let orderTotal = 0;
+
+    for (const item of order.userInfo) {
+      let price = 0;
+
+      if (item.type === "single" || (item.type === "collection" && !item.selectedSize)) {
+        price = parseFloat(item.discount);
+      } else if (item.type === "collection" && item.selectedColor && item.selectedSize) {
+        const selectedColor = item.color.find(c => c.color === item.selectedColor);
+
+        const selectedSize = selectedColor?.sizes?.find(
+          s => s.size === item.selectedSize
+        );
+
+        price = parseFloat(selectedSize?.price || "0");
+      }
+
+      const qty = parseInt(item.quantity || 1, 10);
+      orderTotal += price * qty;
+    }
+
+    // Add delivery fee
+    const delivery = parseFloat(order.delivery || "0");
+    orderTotal += delivery;
+
+    // Apply discount if applicable
+    let discountPercent = 0;
+    if (order.code) {
+      try {
+        const res = await fetch(`/api/offer/${order.code}`);
+        const data = await res.json();
+        discountPercent = data?.per || 0;
+      } catch (error) {
+        console.error("Failed to fetch discount:", error);
+      }
+    }
+
+    const discountAmount = (orderTotal * discountPercent) / 100;
+    const finalTotal = orderTotal - discountAmount;
+
+    grandTotal += finalTotal;
+  }
+
+  return grandTotal.toFixed(2);
+};
+
+
+
+  useEffect(() => {
+    const fetchTotal = async () => {
+      if (allTemp1) {
+        const total = await calculateOrderTotal([allTemp1]);
+        setTotalAmount(total);
+      }
+    };
+
+    fetchTotal();
+  }, [allTemp1]);
 
 
 
@@ -503,8 +573,12 @@ const page = () => {
                       <span className="font-semibold">{allTemp1.code}</span>
                     </div>
                     <div className="flex justify-between mb-2">
+                      <span className="font-semibold">Delivery:</span>
+                      <span className="font-semibold">${allTemp1.delivery}</span>
+                    </div>
+                    <div className="flex justify-between mb-2">
                       <span className="font-semibold">Total Amount:</span>
-                      <span className="font-semibold">${allTemp1.total}</span>
+                      <span className="font-semibold">{totalAmount !== null ? `$${totalAmount}` : "..."}</span>
                     </div>
 
                     <div className="mt-4">
