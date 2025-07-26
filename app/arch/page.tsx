@@ -103,7 +103,7 @@ const fetchProducts = async () => {
       const data = await response.json();
 
       // Filter out deleted items
-      const filteredData = data.filter(item => item.delete !== true);
+      const filteredData = data.filter(item => item.delete == true);
 
       setTemp(filteredData);
     } else {
@@ -427,34 +427,8 @@ try {
                     href={`/order?id=${post.id}`}
                   >
                     View
-                  </a>
-                  <button
-                    onClick={() => handleDeleteOrder(post.id)}
-                    className="bg-red-500 text-white p-1 w-14 h-8 "
-                  >
-                    Delete
-                  </button>
-                  <button
-                    className={`p-1 w-14 h-8 ${post.paid ? "bg-blue-500 text-white" : "bg-black text-white"
-                      }`}
-                    onClick={() => !post.paid && handlePaymentUpdate(post.id)}
-                    disabled={
-                      !((updatedNums[post.id] || post.num) && submittedPosts[post.id]) || post.paid
-                    } // Disable if no receipt or not submitted
-                  >
-                    {post.paid ? "Paid" : "Unpaid"}
-                  </button>
-
-                  <button
-                    className={`p-1 w-20 h-8 ${post.fulfillment ? "bg-blue-500 text-white" : "bg-black text-white"
-                      }`}
-                    onClick={() => handlePaymentUpdate1(post.id, post.fulfillment)}
-                    disabled={
-                      !((updatedNums[post.id] || post.num) && submittedPosts[post.id])
-                    } // Disable if no receipt or not submitted
-                  >
-                    {post.fulfillment ? "Fulfilled" : "Unfulfilled"}
-                  </button>
+                  </a> 
+                
 
 
 

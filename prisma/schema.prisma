@@ -27,6 +27,7 @@ model Product {
   color        Json?
   type         String
   arrival      String   @default("no")
+  cost         String?
 }
 
 model Category {
@@ -54,6 +55,7 @@ model Order {
   remark      String?
   fulfillment Boolean @default(false)
   date        String
+  delete      Boolean @default(false)
 }
 
 model Review {

@@ -478,15 +478,18 @@ const calculateOrderTotal = async (orders) => {
                     )}
                   </tbody>
                 </table>
-                <button
-                  onClick={() => {
-                    fetchAvailableProducts();
-                    setShowModal(true);
-                  }}
-                  className="bg-green-600 text-white px-4 py-2 rounded mb-4"
-                >
-                  Add New Product
-                </button>
+{!allTemp1?.delete && (
+  <button
+    onClick={() => {
+      fetchAvailableProducts();
+      setShowModal(true);
+    }}
+    className="bg-green-600 text-white px-4 py-2 rounded mb-4"
+  >
+    Add New Product
+  </button>
+)}
+
 
 
               </div>
@@ -504,6 +507,7 @@ const calculateOrderTotal = async (orders) => {
     className="border p-1 w-1/2"
     value={editableData.fname}
     onChange={(e) => handleFieldChange("fname", e.target.value)}
+    disabled={allTemp1?.delete === true}
   />
 </div>
 <div className="flex justify-between mb-2">
@@ -513,6 +517,7 @@ const calculateOrderTotal = async (orders) => {
     className="border p-1 w-1/2"
     value={editableData.lname}
     onChange={(e) => handleFieldChange("lname", e.target.value)}
+    disabled={allTemp1?.delete === true}
   />
 </div>
 
@@ -524,6 +529,7 @@ const calculateOrderTotal = async (orders) => {
                         className="border p-1 w-1/2"
                         value={editableData.phone}
                         onChange={(e) => handleFieldChange("phone", e.target.value)}
+                        disabled={allTemp1?.delete === true}
                       />
                     </div>
 
@@ -539,6 +545,7 @@ const calculateOrderTotal = async (orders) => {
                         className="border p-1 w-1/2"
                         value={editableData.city}
                         onChange={(e) => handleFieldChange("city", e.target.value)}
+                        disabled={allTemp1?.delete === true}
                       />
                     </div>
 
@@ -549,6 +556,7 @@ const calculateOrderTotal = async (orders) => {
                         className="border p-1 w-1/2"
                         value={editableData.address}
                         onChange={(e) => handleFieldChange("address", e.target.value)}
+                        disabled={allTemp1?.delete === true}
                       />
                     </div>
 
@@ -559,6 +567,7 @@ const calculateOrderTotal = async (orders) => {
                         className="border p-1 w-1/2"
                         value={editableData.apt}
                         onChange={(e) => handleFieldChange("apt", e.target.value)}
+                        disabled={allTemp1?.delete === true}
                       />
                     </div>
 
@@ -587,12 +596,14 @@ const calculateOrderTotal = async (orders) => {
   onChange={handleRemarkChange}
   placeholder="Enter remark"
   className="border p-1 w-full"
+  disabled={allTemp1?.delete === true}
 />
 
                       <div className="mt-2"> 
                         <button
                           onClick={handleSaveCustomerDetails}
                           className="bg-green-500 text-white p-1"
+                          disabled={allTemp1?.delete === true}
                         >
                           Save
                         </button>

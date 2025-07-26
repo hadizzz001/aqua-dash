@@ -101,6 +101,10 @@ export default function ProductTable() {
     return filterBySearch(product) && filterByCategory(product);
   });
 
+  let totalQty = 0;
+  let totalDiscount = 0;
+  let totalCostSum = 0;
+  let totalAllCost = 0;
 
 
 
@@ -150,170 +154,270 @@ export default function ProductTable() {
             <th className="border p-2">Title</th>
             <th className="border p-2">Pic</th>
             <th className="border p-2">Discount Price (USD)</th>
+            <th className="border p-2">Cost</th>
+            <th className="border p-2">Total Cost</th>
             <th className="border p-2">Category</th>
             <th className="border p-2">New Arrival</th>
             <th className="border p-2">Type</th>
             <th className="border p-2">Stock</th>
             <th className="border p-2">Colors & Qty</th>
+
+
             <th className="border p-2">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {filteredProducts.map((product) => {
-            const fileUrl = product.img[0];
-            const isVideo = /\.(mp4|webm|ogg)$/i.test(fileUrl);
-            const isCollection = product.type === "collection";
-            const isSingle = product.type === "single";
-
-            // Stock Calculation Logic
-            const isOutOfStockSingle = isSingle && (product.stock === "0" || product.stock === 0 || product.stock === null );
-
-            const allColorsQtyZero = isCollection &&
-              product.color &&
-              product.color.length > 0 &&
-              product.color.every(c => !c.sizes && parseInt(c.qty) === 0);
-
-            const allSizesQtyZero = isCollection &&
-              product.color &&
-              product.color.length > 0 &&
-              product.color.every(c =>
-                Array.isArray(c.sizes) &&
-                c.sizes.length > 0 &&
-                c.sizes.every(s => parseInt(s.qty || 0) === 0)
-              );
-
-            let totalStock = 0;
-            if (isSingle) {
-              totalStock = parseInt(product.stock || 0);
-            } else if (product.color && product.color.length > 0) {
-              product.color.forEach(c => {
-                if (Array.isArray(c.sizes) && c.sizes.length > 0) {
-                  totalStock += c.sizes.reduce((sum, s) => sum + parseInt(s.qty || 0), 0);
-                } else {
-                  totalStock += parseInt(c.qty || 0);
-                }
-              });
-            }
-
-            const isLowStock = totalStock > 0 && totalStock < 3;
-
-            let rowClass = "";
-            if (isOutOfStockSingle || allColorsQtyZero || allSizesQtyZero) {
-              rowClass = "bg-red-300";
-            } else if (isLowStock) {
-              rowClass = "bg-yellow-300";
-            }
-
-
-
-
+          {(() => {
+            let totalQty = 0;
+            let totalDiscount = 0;
+            let totalCostSum = 0;
+            let totalAllCost = 0;
 
             return (
-              <tr key={product.id} className={rowClass}>
+              <>
+                {filteredProducts.map((product) => {
+                  const fileUrl = product.img[0];
+                  const isVideo = /\.(mp4|webm|ogg)$/i.test(fileUrl);
+                  const isCollection = product.type === "collection";
+                  const isSingle = product.type === "single";
 
-                <td className="border p-2">{product.title}</td>
-                <td className="border p-2">
-                  {isVideo ? (
-                    <video controls className="w-24 h-auto">
-                      <source src={fileUrl} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <img src={fileUrl} alt="Product" className="w-24 h-auto" />
-                  )}
-                </td>
-                <td className="border p-2">
-                  {product.type === 'single' || (product.type === 'collection' && !product.color)
-                    ? (`$${product.discount}`)
-                    : (product.type === 'collection' && product.color && product.color.some(c => c.sizes?.length)
-                      ? (() => {
-                        const prices = product.color
-                          .flatMap(c => c.sizes || [])
-                          .map(s => s.price);
+                  // Stock Calculation Logic
+                  const isOutOfStockSingle = isSingle && (product.stock === "0" || product.stock === 0 || product.stock === null);
 
-                        if (prices.length === 0) return product.discount;
+                  const allColorsQtyZero = isCollection &&
+                    product.color &&
+                    product.color.length > 0 &&
+                    product.color.every(c => !c.sizes && parseInt(c.qty) === 0);
 
-                        const minPrice = Math.min(...prices);
-                        const maxPrice = Math.max(...prices);
+                  const allSizesQtyZero = isCollection &&
+                    product.color &&
+                    product.color.length > 0 &&
+                    product.color.every(c =>
+                      Array.isArray(c.sizes) &&
+                      c.sizes.length > 0 &&
+                      c.sizes.every(s => parseInt(s.qty || 0) === 0)
+                    );
 
-                        return minPrice === maxPrice
-                          ? `$${minPrice.toFixed(2)}`
-                          : `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
-                      })()
-                      : `$${product.discount}`
-                    )
-                  }
-                </td>
-
-                <td className="border p-2">{product.category}</td>
-                <td className="border p-2">{product.arrival}</td>
-                <td className="border p-2">{product.type}</td>
-
-                <td className="border p-2">
-                  {product.type === 'single' && product.stock}
-
-                  {product.type === 'collection' && product.color && !product.color[0]?.sizes &&
-                    product.color.reduce((sum, c) => sum + (c.qty || 0), 0)
+                  let totalStock = 0;
+                  if (isSingle) {
+                    totalStock = parseInt(product.stock || 0);
+                  } else if (product.color && product.color.length > 0) {
+                    product.color.forEach(c => {
+                      if (Array.isArray(c.sizes) && c.sizes.length > 0) {
+                        totalStock += c.sizes.reduce((sum, s) => sum + parseInt(s.qty || 0), 0);
+                      } else {
+                        totalStock += parseInt(c.qty || 0);
+                      }
+                    });
                   }
 
-                  {product.type === 'collection' && product.color && product.color[0]?.sizes &&
-                    product.color.reduce(
-                      (colorSum, color) =>
-                        colorSum +
-                        (color.sizes
-                          ? color.sizes.reduce((sizeSum, s) => sizeSum + (s.qty || 0), 0)
-                          : 0),
-                      0
-                    )
+                  const isLowStock = totalStock > 0 && totalStock < 3;
+
+                  let rowClass = "";
+                  if (isOutOfStockSingle || allColorsQtyZero || allSizesQtyZero) {
+                    rowClass = "bg-red-300";
+                  } else if (isLowStock) {
+                    rowClass = "bg-yellow-300";
                   }
-                </td>
 
-                <td className="border p-2">
-                  {!isSingle && product.color && product.color.length > 0 ? (
-                    <ul className="space-y-1">
-                      {product.color.map((c, index) => (
-                        <li key={index}>
-                          <span className="font-semibold">{c.color}</span>
-                          {c.sizes && Array.isArray(c.sizes) ? (
-                            <ul className="ml-4 space-y-1 list-disc">
-                              {c.sizes.map((s, idx) => (
-                                <li key={idx}>
-                                  <span className="italic">{s.size}</span>: {s.qty}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <>: {c.qty}</>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    isCollection ? 'No colors' : '—'
-                  )}
-                </td>
+                  // Discount logic
+                  let discount = 0;
+                  if (product.type === 'single' || (product.type === 'collection' && !product.color)) {
+                    discount = parseFloat(product.discount || 0);
+                  } else if (product.color && product.color.some(c => Array.isArray(c.sizes) && c.sizes.length > 0)) {
+                    const prices = product.color
+                      .flatMap(c => c.sizes || [])
+                      .map(s => parseFloat(s.price || 0))
+                      .filter(p => !isNaN(p));
+                    discount = prices.length ? Math.min(...prices) : parseFloat(product.discount || 0);
+                  } else {
+                    discount = parseFloat(product.discount || 0);
+                  }
+
+                  let minPrice = discount;
+                  let maxPrice = discount;
+
+                  if (
+                    product.color &&
+                    product.color.some(c => Array.isArray(c.sizes) && c.sizes.length > 0)
+                  ) {
+                    const prices = product.color
+                      .flatMap(c => c.sizes || [])
+                      .map(s => parseFloat(s.price || 0))
+                      .filter(p => !isNaN(p));
+                    if (prices.length > 0) {
+                      minPrice = Math.min(...prices);
+                      maxPrice = Math.max(...prices);
+                    }
+                  }
+
+                  const minCost = +(minPrice * 0.40).toFixed(2);
+                  const maxCost = +(maxPrice * 0.40).toFixed(2);
+
+                  const minTotalCost = +(minCost * totalStock).toFixed(2);
+                  const maxTotalCost = +(maxCost * totalStock).toFixed(2);
+
+                  // For totals accumulation, use average of min and max cost
+                  const averageCost = +(((minCost + maxCost) / 2) || 0).toFixed(2);
+                  const averageTotalCost = +(((minTotalCost + maxTotalCost) / 2) || 0).toFixed(2);
 
 
-                <td className="border p-2">
-                  <button
-                    onClick={() => handleEdit(product)}
-                    className="bg-yellow-500 text-white px-2 py-1 mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="bg-red-500 text-white px-2 py-1"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+
+
+                  // Totals accumulation
+                  totalQty += totalStock;
+                  totalDiscount += discount;
+                  totalCostSum += averageCost;
+                  totalAllCost += averageTotalCost;
+
+
+                  return (
+                    <tr key={product.id} className={rowClass}>
+                      <td className="border p-2">{product.title}</td>
+
+                      <td className="border p-2">
+                        {isVideo ? (
+                          <video controls className="w-24 h-auto">
+                            <source src={fileUrl} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                        ) : (
+                          <img src={fileUrl} alt="Product" className="w-24 h-auto" />
+                        )}
+                      </td>
+
+                      <td className="border p-2">
+                        {product.type === 'single' || (product.type === 'collection' && !product.color)
+                          ? `$${parseFloat(product.discount || 0).toFixed(2)}`
+                          : (product.color && product.color.some(c => Array.isArray(c.sizes) && c.sizes.length > 0)
+                            ? (() => {
+                              const prices = product.color
+                                .flatMap(c => c.sizes || [])
+                                .map(s => parseFloat(s.price || 0))
+                                .filter(p => !isNaN(p));
+                              if (prices.length === 0) return `$${parseFloat(product.discount || 0).toFixed(2)}`;
+                              const minPrice = Math.min(...prices);
+                              const maxPrice = Math.max(...prices);
+                              return minPrice === maxPrice
+                                ? `$${minPrice.toFixed(2)}`
+                                : `$${maxPrice.toFixed(2)}`;
+                            })()
+                            : `$${parseFloat(product.discount || 0).toFixed(2)}`
+                          )
+                        }
+                      </td>
+
+                      <td className="border p-2">
+                        {minCost === maxCost
+                          ? `$${minCost.toFixed(2)}`
+                          : `$${maxCost.toFixed(2)}`
+                        }
+                      </td>
+
+<td className="border p-2">
+  {product.type === 'collection' &&
+  product.color &&
+  product.color.some(c => Array.isArray(c.sizes) && c.sizes.length > 0) ? (
+    (() => {
+      let totalStock = 0;
+
+      product.color.forEach(c => {
+        if (Array.isArray(c.sizes)) {
+          c.sizes.forEach(s => {
+            const qty = parseInt(s.qty || 0);
+            totalStock += qty;
+          });
+        }
+      });
+
+      const totalCost = totalStock * maxCost;
+
+      return <span>${totalCost.toFixed(2)}</span>;
+    })()
+  ) : (
+    minTotalCost === maxTotalCost
+      ? `$${minTotalCost.toFixed(2)}`
+      : `$${minTotalCost.toFixed(2)} - $${maxTotalCost.toFixed(2)}`
+  )}
+</td>
+
+
+
+                      <td className="border p-2">{product.category}</td>
+                      <td className="border p-2">{product.arrival}</td>
+                      <td className="border p-2">{product.type}</td>
+
+                      <td className="border p-2">{totalStock}</td>
+
+                      <td className="border p-2">
+                        {!isSingle && product.color && product.color.length > 0 ? (
+                          <ul className="space-y-1">
+                            {product.color.map((c, index) => (
+                              <li key={index}>
+                                <span className="font-semibold">{c.color}</span>
+                                {c.sizes && Array.isArray(c.sizes) ? (
+                                  <ul className="ml-4 space-y-1 list-disc">
+                                    {c.sizes.map((s, idx) => (
+                                      <li key={idx}>
+                                        <span className="italic">{s.size}</span>: {s.qty}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <>: {c.qty}</>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          isCollection ? 'No colors' : '—'
+                        )}
+                      </td>
+
+
+
+
+
+
+
+                      <td className="border p-2">
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="bg-yellow-500 text-white px-2 py-1 mr-2"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="bg-red-500 text-white px-2 py-1"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                <tr className="bg-gray-200 font-bold">
+                  <td colSpan={6} className="border p-2 text-right"></td>
+                  <td className="border p-2"></td>
+                  <td className="border p-2"></td>
+                  <td className="border p-2 text-right">
+Total qty: {totalQty}
+
+
+                  </td>
+                  <td className="border p-2"></td>
+                  <td className="border p-2">
+                    Total Sale: ${totalDiscount.toFixed(2)}<br /> 
+                    Total cost: ${totalCostSum.toFixed(2)}<br /> 
+                    All Cost total: ${totalAllCost.toFixed(2)}</td>
+                </tr>
+              </>
             );
-          })}
+          })()}
         </tbody>
-
       </table>
 
 
@@ -349,7 +453,7 @@ function EditProductForm({ product, onCancel, onSave }) {
   const rawPrice = parseFloat(((origin + shippingCost) / (1 - profit || 1)).toFixed(2));
   const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
   const finalPrice = parseFloat((roundedUpPrice).toFixed(2));
-  const profitAmount = parseFloat((roundedUpPrice - (origin + shippingCost)).toFixed(2));
+  const profitAmount = parseFloat((rawPrice - (origin + shippingCost)).toFixed(2));
   const oldprice = parseFloat((finalPrice * 1.25).toFixed(2));
   const landing = parseFloat((shippingCost + origin).toFixed(2));
 
@@ -640,14 +744,14 @@ function EditProductForm({ product, onCancel, onSave }) {
                       <button
                         type="button"
                         className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
-onClick={() => {
-  const size = prompt('Enter size name (e.g., S, M, L)');
-  if (!size || size.includes(',')) {
-    alert('Commas are not allowed in the size name.');
-    return;
-  }
-  updateSize(color, size, { size, qty: 1, price: '' });
-}}
+                        onClick={() => {
+                          const size = prompt('Enter size name (e.g., S, M, L)');
+                          if (!size || size.includes(',')) {
+                            alert('Commas are not allowed in the size name.');
+                            return;
+                          }
+                          updateSize(color, size, { size, qty: 1, price: '' });
+                        }}
 
                       >
                         + Add Size

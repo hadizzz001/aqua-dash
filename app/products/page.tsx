@@ -35,16 +35,17 @@ export default function AddProduct() {
   const origin = parseFloat(originPrice) || 0;
   const weight = parseFloat(weightKg) || 0;
   const profit = (parseFloat(profitPercent) || 0) / 100;
-  const rate = parseFloat(shippingRate) || 0;
+  const rate = parseFloat(shippingRate) || 0; 
+
 
   const shippingCost = parseFloat((weight * rate).toFixed(2));
-const rawPrice = parseFloat(((origin + shippingCost) / (1 - profit || 1)).toFixed(2));
-const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
+const rawPrice = (origin + shippingCost) / (1 - profit || 1); 
+const finalPrice = parseFloat(((Math.floor(rawPrice) + 1) - 0.01).toFixed(2)); 
+const profitAmount = parseFloat((rawPrice - (origin + shippingCost)).toFixed(2)); 
+const oldprice = parseFloat((finalPrice * 1.25).toFixed(2));
+const landing = parseFloat((shippingCost + origin).toFixed(2));
 
-  const finalPrice = parseFloat((roundedUpPrice).toFixed(2));
-  const profitAmount = parseFloat((roundedUpPrice - (origin + shippingCost)).toFixed(2));
-  const oldprice = parseFloat((finalPrice * 1.25).toFixed(2));
-  const landing = parseFloat((shippingCost + origin).toFixed(2));
+
 
 
 
@@ -457,10 +458,10 @@ const roundedUpPrice = (Math.floor(rawPrice) + 1) - 0.01;
                         className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
                         onClick={() => {
                           const size = prompt('Enter size name (e.g., S, M, L)');
-                            if (!size || size.includes(',')) {
-    alert('Commas are not allowed in the size name.');
-    return;
-  }
+                          if (!size || size.includes(',')) {
+                            alert('Commas are not allowed in the size name.');
+                            return;
+                          }
 
                           setColorQuantities((prev) => ({
                             ...prev,

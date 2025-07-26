@@ -55,6 +55,11 @@ export default function Sidebar() {
               </a>
             </li> 
             <li>
+              <a href="/arch" style={{ color: "white", textDecoration: "none" }}>
+                Archives
+              </a>
+            </li> 
+            <li>
               <a href="/" style={{ color: "white", textDecoration: "none" }}>
                 Logout
               </a>
